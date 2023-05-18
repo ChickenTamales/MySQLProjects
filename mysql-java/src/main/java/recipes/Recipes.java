@@ -12,11 +12,15 @@ import recipes.service.RecipeService;
 
 public class Recipes {
 	private Scanner scanner = new Scanner(System.in);// instead of console output, it's console input from user
+	private Recipe curRecipe;
 	private RecipeService recipeService = new RecipeService();
+
 //@formatter:off
  private List<String> operations = List.of(
 		 "1) Create and populate all tables",
-		 "2) Add a recipe"
+		 "2) Add a recipe",
+		 "3) List recipes",
+		 "4) Select working recipe"
 		 );
 //@formatter:on
 
@@ -37,16 +41,38 @@ public class Recipes {
 				case -1:
 					done = exitMenu();
 					break;// will return true which indicates that we're done
+
+				/*
+				 * Operation "1)Create and populate all tables" will do the following:
+				 */
 				case 1:
 					createTables();
 					break;
 
+				/*
+				 * Operation "2) Add a recipe" will do the following:
+				 */
 				case 2:
 					addRecipe();
 					break;
 
+				/*
+				 * Operation "3) List recipes" will do the following:
+				 */
+				case 3:
+					listRecipes();
+					break;
+
+				/*
+				 * Operation "4) Select working recipe" will do the following:
+				 */
+				case 4:
+					setCurrentRecipe();
+					break;
+
 				default:
-					System.out.println("\n" + operation + " is not valid. Try again.");
+					System.out.println("\n" + operation 
+							+ " is not valid. Try again.");
 					break;
 				}
 			} catch (Exception e) {
@@ -54,6 +80,50 @@ public class Recipes {
 			}
 		}
 
+	}
+
+	private void setCurrentRecipe() {
+		// show recipes first
+		List<Recipe> recipes = listRecipes();
+
+		Integer recipeId = getIntInput("Select a recipe ID");
+
+		curRecipe = null;
+		for (Recipe recipe : recipes) {
+			if (recipe.getRecipeId().equals(recipeId)) {
+				curRecipe = recipeService.fetchRecipeById(recipeId);
+				break;
+			}
+		}
+		// if we don't find a match
+		if (Objects.isNull(curRecipe)) {
+			System.out.println("\nInvalid recipe selected.");
+		}
+
+	}
+
+	/**
+	 * Fetch the list of recipes, print the recipe IDs and names on the console, and
+	 * return the list.
+	 * 
+	 * @return The list of recipes
+	 */
+	private List<Recipe> listRecipes() {
+		List<Recipe> recipes = recipeService.fetchRecipes();
+
+		System.out.println("\nRecipes:");
+
+		/* Print the list of recipes using a Lambda expression. */
+		recipes.forEach(recipe -> System.out.println(
+				"    " + recipe.getRecipeId() + ": " + recipe.getRecipeName()));
+
+		/* This will print the list of recipes using an enhances for loop. */
+// for (Recipe recipe : recipes) {
+// System.out.println(
+// " " + recipe.getRecipeId() + ": " + recipe.getRecipeName());
+// }
+
+		return recipes;
 	}
 
 	private void addRecipe() {
@@ -66,6 +136,7 @@ public class Recipes {
 		LocalTime prepTime = minutesToLocalTime(prepMinutes);// turns prepMinutes into local time
 		LocalTime cookTime = minutesToLocalTime(cookMinutes);
 
+		/* Create a recipe object from the user input. */
 		Recipe recipe = new Recipe();
 
 		recipe.setRecipeName(name);
@@ -74,10 +145,24 @@ public class Recipes {
 		recipe.setPrepTime(prepTime);
 		recipe.setCookTime(cookTime);
 
+		/*
+		 * Add the recipe to the recipe table. This will throw an unchecked exception if
+		 * there is an error. The exception is picked up by the exception handler in
+		 * displayMenu(). This keeps the code very clean and readable.
+		 */
 		Recipe dbRecipe = recipeService.addRecipe(recipe);
 		System.out.println("You added this recipe:\n" + dbRecipe);
+
+		curRecipe = recipeService.fetchRecipeById(dbRecipe.getRecipeId());
 	}
 
+	/**
+	 * Convert from an Integer minute value to a LocalTime object.
+	 * 
+	 * @param numMinutes The number of minutes. This may be {@code null}, in which
+	 *                   case the number of minutes is set to zero.
+	 * @return A LocalTime object containing the number of hours and minutes.
+	 */
 	private LocalTime minutesToLocalTime(Integer numMinutes) {
 		int min = Objects.isNull(numMinutes) ? 0 : numMinutes;
 		int hours = min / 60;
@@ -110,6 +195,12 @@ public class Recipes {
 		System.out.println("Here's what you can do:");
 
 		operations.forEach(op -> System.out.println("   " + op));
+		
+		if (Objects.isNull(curRecipe)) {
+			System.out.println("\nYou are not working with a recipe.");
+		} else {
+			System.out.println("\nYou are working with recipe " + curRecipe);
+		}
 
 	}
 

@@ -25,11 +25,11 @@ public class Ingredient extends EntityBase {//created from recipe_schema.sql
 	public void setRecipeId(Integer recipeId) {
 		this.recipeId = recipeId;
 	}
-	public Unit getUnitId() {
+	public Unit getUnit() {
 		return unit;
 	}
-	public void setUnitId(Unit unitId) {
-		this.unit = unitId;
+	public void setUnit(Unit unit) {
+		this.unit = unit;
 	}
 	public String getIngredientName() {
 		return ingredientName;
@@ -65,7 +65,7 @@ public class Ingredient extends EntityBase {//created from recipe_schema.sql
 		
 		b.append("ID=").append(ingredientId).append(": ");
 		b.append(toFraction(amount));//will convert a decimal value to a fraction which is more suitable for recipes
-		if(Objects.nonNull(unit) && Objects.nonNull(getUnitId())) {
+		if(Objects.nonNull(unit) && Objects.nonNull(unit.getUnitId())) {
 			String singular = unit.getUnitNameSingular();
 			String plural = unit.getUnitNamePlural();
 			String word = amount.compareTo(BigDecimal.ONE) > 0 ? plural : singular;// if is greater than 1, will select plural, if not, select singular

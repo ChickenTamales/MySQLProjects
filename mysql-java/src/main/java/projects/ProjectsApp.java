@@ -20,22 +20,29 @@ import projects.service.ProjectService;
 public class ProjectsApp {
 
 /*
- * 2. In this step you will use a Scanner to obtain input from a user from the Java console.
+ * In this step you will use a Scanner to obtain input from a user from the Java console.
  */
 
 	private Scanner scanner = new Scanner(System.in);// instead of console output, it's console input from user
 
 	private ProjectService projectService = new ProjectService();
+	
+	private Project curProject;
+	
+	
 
 //@formatter:off
 	
  private List<String> operations = List.of(
-		 "1) Add a project" 
+		 "1) Add a project",
+		 "2) List projects",
+		 "3) Select a project"
 		 );
 //@formatter:on
 
 /*
- * 3.In this step you will call the method that processes the menu. In the main() method, create a new ProjectsApp object and call the method:
+ * In this step you will call the method that processes the menu. In the main() method, create a new 
+ * ProjectsApp object and call the method:
  * processUserSelections() method.
  */
 
@@ -44,7 +51,7 @@ public class ProjectsApp {
 	}
 
 /*
- * 4. Now you can create the processUserSelections()
+ * Now you can create the processUserSelections()
  */
 
 	private void processUserSelections() {
@@ -55,7 +62,7 @@ public class ProjectsApp {
 				int selection = getUserSelection();
 
 /*
- * 9. Now we want to add code that will process the user's selection.
+ * Now we want to add code that will process the user's selection.
  */
 
 				switch (selection) {
@@ -65,6 +72,14 @@ public class ProjectsApp {
 
 				case 1:
 					createProject();
+					break;
+					
+				case 2:
+					listProjects();
+					break;
+					
+				case 3:
+					selectProject();
 					break;
 
 				default:
@@ -76,9 +91,59 @@ public class ProjectsApp {
 			}
 		}
 	}
+/*
+ * Add a new method named selectProject(). It takes no parameters and returns nothing.
+ * 
+ * Call listProjects() to print a List of Projects.
+ * 
+ * Collect a project ID from the user and assign it to an Integer variable named projectId. 
+ * Prompt the user with "Enter a project ID to select a project". 
+ * 
+ * Set the instance variable curProject to null to unselect any currently selected project. 
+ * This is done in case the call to the service results in an exception being thrown. 
+ * Rather than leave the current project selected in that case, it is unselected first.
+ * 
+ * Call a new method, fetchProjectById() on the projectService object. 
+ * The method should take a single parameter, the project ID input by the user. 
+ * It should return a Project object. Assign the returned Project object to 
+ * the instance variable curProject. Note that if an invalid project ID is entered, 
+ * projectService.fetchProjectById() will throw a NoSuchElementException, 
+ * which is handled by the catch block in processUserSelections().
+ * 
+ * At the end of the method, add a check to see if curProject is null. 
+ * If so, print "Invalid project ID selected." on the console. 
+ */
+private void selectProject() {
+	listProjects();
+	
+	Integer projectId = getIntInput("Enter a project ID to select a project.");
+	
+	curProject = null;
+	
+	curProject = projectService.fetchProjectById(projectId);
+	
+	if (Objects.isNull(curProject)) {
+		System.out.println("\nThat is not a valid project.");
+	}
+}
+
+private void listProjects() {
+	List<Project> projects = projectService.fetchAllProjects();
+	
+	curProject = null;
+	
+	System.out.println("\nProjects:");
+	
+/*
+ * For each Project, print the ID and name separated by ": ". Indent each line with a couple of spaces.
+ */
+	
+	projects.forEach(project -> System.out.println("   " 
+	+ project.getProjectId() + ": " + project.getProjectName()));
+}
 
 /*
- * 3. Create the method createProject().
+ * Create the method createProject().
  */
 	
 	private void createProject() {
@@ -89,6 +154,7 @@ public class ProjectsApp {
 		String notes = getStringInput("Enter the project notes");
 
 		Project project = new Project();
+		
 		project.setProjectName(projectName);
 		project.setEstimatedHours(estimatedHours);
 		project.setActualHours(actualHours);
@@ -142,6 +208,12 @@ public class ProjectsApp {
 		System.out.println("\nThese are the available selections. Press enter to quit.");
 
 		operations.forEach(line -> System.out.println("   " + line));// print the operations
+		
+		if(Objects.isNull(curProject)) {
+			System.out.println("\nYou are not working with a project.");
+		}else {
+			System.out.println("\nYou are working with " + curProject);
+		}
 	}
 
 //7. Create the method getIntInput.

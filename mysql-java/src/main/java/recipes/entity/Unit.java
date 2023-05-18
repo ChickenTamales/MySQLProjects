@@ -24,7 +24,7 @@ public void setUnitNamePlural(String unitNamePlural) {
 }
 @Override
 public String toString() {
-	return "Unit [unitId=" + unitId + ", unitNameSingular=" + unitNameSingular + ", unitNamePlural=" + unitNamePlural;
+	return "Unit [unitId=" + unitId + ", unitNameSingular=" + unitNameSingular + ", unitNamePlural=" + unitNamePlural + "]";
 }
  
  

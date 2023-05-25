@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import projects.dao.ProjectDao;
 import projects.entity.Project;
+import projects.exception.*;
 
 public class ProjectService {
 	
@@ -45,6 +46,18 @@ public class ProjectService {
 		return projectDao.fetchProjectById(projectId).orElseThrow(() -> new NoSuchElementException(
 				"Project with ID=" + projectId + " does not exist. "));
 		
+		
+	}
+
+	public void modifyProjectDetails(Project project) {
+		/* Call projectDao.modifyProjectDetails(). Pass the Project objects as a parameter. The DAO method 
+		 * returns a boolean that indicates whether the UPDATE operation was successful. Check the return
+		 * value. If it is false, throw a DbException with a message that says the project does not exist.
+		 */
+		if(!projectDao.modifyProjectDetails(project)){
+			throw new DbException("Project with ID=" 
+					+ project.getProjectId() + " does not exist.");
+		}
 		
 	}
 }

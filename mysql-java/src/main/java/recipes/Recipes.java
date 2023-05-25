@@ -1,12 +1,17 @@
 package recipes;
 
+import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
 import recipes.dao.DbConnection;
+import recipes.entity.Category;
+import recipes.entity.Ingredient;
 import recipes.entity.Recipe;
+import recipes.entity.Unit;
+import recipes.entity.Step;
 import recipes.exception.DbException;
 import recipes.service.RecipeService;
 
@@ -20,7 +25,10 @@ public class Recipes {
 		 "1) Create and populate all tables",
 		 "2) Add a recipe",
 		 "3) List recipes",
-		 "4) Select working recipe"
+		 "4) Select current recipe",
+		 "5) Add ingredient to current recipe",
+		 "6) Add step to current recipe",
+		 "7) Add category to current recipe"
 		 );
 //@formatter:on
 
@@ -69,6 +77,19 @@ public class Recipes {
 				case 4:
 					setCurrentRecipe();
 					break;
+					
+				case 5:
+					addIngredientToCurrentRecipe();
+						break;
+						
+				case 6:
+					addStepToCurrentRecipe();
+					break;
+					
+				case 7:
+					addCategoryToCurrentRecipe();
+					break;
+					
 
 				default:
 					System.out.println("\n" + operation 
@@ -80,6 +101,82 @@ public class Recipes {
 			}
 		}
 
+	}
+
+	private void addCategoryToCurrentRecipe() {
+		if(Objects.isNull(curRecipe)) {
+			System.out.println("\nPlease select a recipe");
+		return;
+		}
+		
+		List<Category> categories = recipeService.fetchCategories();
+		
+		categories.forEach(
+				category -> System.out.println("   " + category.getCategoryName()));
+		
+		String category = getStringInput("Enter the category to add");
+		
+		if(Objects.nonNull(category)) {
+			recipeService.addCategoryToRecipe(curRecipe.getRecipeId(), category);
+			
+			curRecipe = recipeService.fetchRecipeById(curRecipe.getRecipeId());
+		}
+	}
+
+	private void addStepToCurrentRecipe() {
+		//check to see if curRecipe is null
+		if(Objects.isNull(curRecipe)) {
+			//if curRecipe is null, ask user to select a recipe
+			System.out.println("\nPlease select a recipe");
+			return;
+		}
+		String stepText = getStringInput("Enter the step text");
+		
+		if(Objects.nonNull(stepText)) {
+			Step step = new Step();
+			
+			step.setRecipeId(curRecipe.getRecipeId());
+			step.setStepText(stepText);
+			
+			recipeService.addStep(step);
+			curRecipe = recipeService.fetchRecipeById(step.getRecipeId());
+		}
+	}
+
+	private void addIngredientToCurrentRecipe() {
+		//what if there is no current recipe?
+		if(Objects.isNull(curRecipe)) {
+			System.out.println("\nPlease select a recipe");
+			return;
+		}
+		//now that a recipe has been selected
+		String name = getStringInput("Enter the ingredient name");
+		String instruction = getStringInput("Enter any instructions: (like \"chopped\")");
+		Double inputAmount = getDoubleInput("Enter amount of ingredient ( like .25)");
+		List<Unit> units = recipeService.fetchUnits();
+		
+		BigDecimal amount = 
+				Objects.isNull(inputAmount) ? null 
+						: new BigDecimal(inputAmount).setScale(2);
+		
+		System.out.println("Units:");
+		units.forEach(unit -> System.out.println("   " + unit.getUnitId() + ": " 
+		+ unit.getUnitNameSingular() + "(" + unit.getUnitNamePlural() + ")" ));
+		
+		Integer unitId = getIntInput("Enter a unit ID (press Enter for none)");
+		
+		Unit unit = new Unit();
+		unit.setUnitId(unitId);
+		
+		Ingredient ingredient = new Ingredient();
+		ingredient.setRecipeId(curRecipe.getRecipeId());
+		ingredient.setUnit(unit);
+		ingredient.setIngredientName(name);
+		ingredient.setInstruction(instruction);
+		ingredient.setAmount(amount);
+		
+		recipeService.addIngredient(ingredient);
+		curRecipe = recipeService.fetchRecipeById(ingredient.getRecipeId());
 	}
 
 	private void setCurrentRecipe() {
@@ -114,8 +211,7 @@ public class Recipes {
 		System.out.println("\nRecipes:");
 
 		/* Print the list of recipes using a Lambda expression. */
-		recipes.forEach(recipe -> System.out.println(
-				"    " + recipe.getRecipeId() + ": " + recipe.getRecipeName()));
+		recipes.forEach(recipe -> System.out.println("    " + recipe.getRecipeId() + ": " + recipe.getRecipeName()));
 
 		/* This will print the list of recipes using an enhances for loop. */
 // for (Recipe recipe : recipes) {
@@ -195,7 +291,7 @@ public class Recipes {
 		System.out.println("Here's what you can do:");
 
 		operations.forEach(op -> System.out.println("   " + op));
-		
+
 		if (Objects.isNull(curRecipe)) {
 			System.out.println("\nYou are not working with a recipe.");
 		} else {

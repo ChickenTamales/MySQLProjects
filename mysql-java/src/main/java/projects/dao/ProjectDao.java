@@ -18,7 +18,6 @@ import projects.entity.Step;
 import projects.exception.DbException;
 import provided.util.DaoBase;
 
-
 /* create a ProjectDao class in the projects.dao package. Make sure that ProjectDao extends 
  * DaoBase from the provided.util package. */
 
@@ -184,142 +183,198 @@ String sql = ""
 	/*
 	 * In the method fetchProjectById():
 	 * 
-	 * Write the SQL statement to return all columns from the project table in the row that 
-	 * matches the given projectId. Make sure to use the parameter placeholder "?" in the SQL statement.
+	 * Write the SQL statement to return all columns from the project table in the
+	 * row that matches the given projectId. Make sure to use the parameter
+	 * placeholder "?" in the SQL statement.
 	 *
-	 * Obtain a Connection object in a try-with-resource statement. Add the catch block to handle the 
-	 * SQLException. In the catch block throw a new DbException passing the SQLException object as a 
-	 * parameter.
+	 * Obtain a Connection object in a try-with-resource statement. Add the catch
+	 * block to handle the SQLException. In the catch block throw a new DbException
+	 * passing the SQLException object as a parameter.
 	 * 
 	 * Start a transaction inside the try-with-resource statement.
 	 * 
-	 * Below the method call to startTransaction(), add an inner try/catch. The catch block should 
-	 * handle Exception. Inside the catch block, rollback the transaction and throw a new DbException 
-	 * that takes the Exception object as a parameter.
+	 * Below the method call to startTransaction(), add an inner try/catch. The
+	 * catch block should handle Exception. Inside the catch block, rollback the
+	 * transaction and throw a new DbException that takes the Exception object as a
+	 * parameter.
 	 * 
-	 * Inside the try block, create a variable of type Project and set it to null. Return the Project 
-	 * object as an Optional object using Optional.ofNullable(). Save the file. You should have no 
-	 * compilation errors at this point but you may see some warnings. This is OK. 
+	 * Inside the try block, create a variable of type Project and set it to null.
+	 * Return the Project object as an Optional object using Optional.ofNullable().
+	 * Save the file. You should have no compilation errors at this point but you
+	 * may see some warnings. This is OK.
 	 * 
-	 * Inside the inner try block, obtain a PreparedStatement from the Connection object in a 
-	 * try-with-resource statement. Pass the SQL statement in the method call to prepareStatement(). 
-	 * Add the projectId method parameter as a parameter to the PreparedStatement.
+	 * Inside the inner try block, obtain a PreparedStatement from the Connection
+	 * object in a try-with-resource statement. Pass the SQL statement in the method
+	 * call to prepareStatement(). Add the projectId method parameter as a parameter
+	 * to the PreparedStatement.
 	 * 
-	 * Obtain a ResultSet in a try-with-resource statement. If the ResultSet has a row in it (rs.next()) 
-	 * set the Project variable to a new Project object and set all fields from values in the ResultSet. 
-	 * You can call the extract() method for this.
+	 * Obtain a ResultSet in a try-with-resource statement. If the ResultSet has a
+	 * row in it (rs.next()) set the Project variable to a new Project object and
+	 * set all fields from values in the ResultSet. You can call the extract()
+	 * method for this.
 	 * 
-	 * Below the try-with-resource statement that obtains the PreparedStatement but inside the try block 
-	 * that manages the rollback, add three method calls to obtain the list of materials, steps, and 
-	 * categories. Since each method returns a List of the appropriate type, you can call addAll() to 
-	 * add the entire List to the List in the Project object:
+	 * Below the try-with-resource statement that obtains the PreparedStatement but
+	 * inside the try block that manages the rollback, add three method calls to
+	 * obtain the list of materials, steps, and categories. Since each method
+	 * returns a List of the appropriate type, you can call addAll() to add the
+	 * entire List to the List in the Project object:
 	 * 
 	 * Commit the transaction.
 	 * 
-	 * */
-	
+	 */
+
 	public Optional<Project> fetchProjectById(Integer projectId) {
-		
+
 		String sql = "SELECT * FROM " + PROJECT_TABLE + " WHERE project_id = ?";
-		
-		try(Connection conn = DbConnection.getConnection()){
+
+		try (Connection conn = DbConnection.getConnection()) {
 			startTransaction(conn);
-			
+
 			try {
 				Project project = null;
-				
-				try(PreparedStatement stmt = conn.prepareStatement(sql)){
+
+				try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 					setParameter(stmt, 1, projectId, Integer.class);
-					
-					try(ResultSet rs = stmt.executeQuery()){
-						if(rs.next()) {
+
+					try (ResultSet rs = stmt.executeQuery()) {
+						if (rs.next()) {
 							project = extract(rs, Project.class);
 						}
 					}
 				}
-				if(Objects.nonNull(project)){
+				if (Objects.nonNull(project)) {
 					project.getMaterials().addAll(fetchMaterialsForProject(conn, projectId));
 					project.getSteps().addAll(fetchStepsForProject(conn, projectId));
 					project.getCategories().addAll(fetchCategoriesForProject(conn, projectId));
 				}
 				commitTransaction(conn);
 				return Optional.ofNullable(project);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				rollbackTransaction(conn);
 				throw new DbException(e);
 			}
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			throw new DbException(e);
 		}
 	}
 
-	private List<Material> fetchMaterialsForProject(Connection conn, Integer projectId) 
-			throws SQLException {
-		
+	private List<Material> fetchMaterialsForProject(Connection conn, Integer projectId) throws SQLException {
+
 		String sql = "SELECT * FROM " + MATERIAL_TABLE + " WHERE project_id = ?";
-		
-		try(PreparedStatement stmt = conn.prepareStatement(sql)){
+
+		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			setParameter(stmt, 1, projectId, Integer.class);
-			
-			try(ResultSet rs = stmt.executeQuery()){
+
+			try (ResultSet rs = stmt.executeQuery()) {
 				List<Material> materials = new LinkedList<>();
-				
-				while(rs.next()) {
+
+				while (rs.next()) {
 					materials.add(extract(rs, Material.class));
 				}
 				return materials;
 			}
-		
+
 		}
 	}
 
-	private List<Step> fetchStepsForProject(Connection conn, Integer projectId) throws SQLException{
-		
+	private List<Step> fetchStepsForProject(Connection conn, Integer projectId) throws SQLException {
+
 		String sql = "SELECT * FROM " + STEP_TABLE + " WHERE project_id = ?";
-		
-		try(PreparedStatement stmt = conn.prepareStatement(sql)){
+
+		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			setParameter(stmt, 1, projectId, Integer.class);
-			
-			try(ResultSet rs = stmt.executeQuery()){
+
+			try (ResultSet rs = stmt.executeQuery()) {
 				List<Step> steps = new LinkedList<>();
-				
-				while(rs.next()) {
+
+				while (rs.next()) {
 					steps.add(extract(rs, Step.class));
 				}
 				return steps;
 			}
 		}
-		
+
 	}
 
-	private List<Category> fetchCategoriesForProject(Connection conn, Integer projectId) 
-			throws SQLException {
-		
-		//formatter: off
-		
-		String sql = ""
-				+ "SELECT c.* FROM " + CATEGORY_TABLE + " c " 
-				+ "JOIN " + PROJECT_CATEGORY_TABLE + " pc USING (category_id) " 
-				+ "WHERE project_id = ?";
-		
-		//formatter: on
-		
-		try(PreparedStatement stmt = conn.prepareStatement(sql)){
+	private List<Category> fetchCategoriesForProject(Connection conn, Integer projectId) throws SQLException {
+
+		// formatter: off
+
+		String sql = "" 
+		+ "SELECT c.* FROM " 
+				+ CATEGORY_TABLE + " c " + "JOIN " + PROJECT_CATEGORY_TABLE
+				+ " pc USING (category_id) " + "WHERE project_id = ?";
+
+		// formatter: on
+
+		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			setParameter(stmt, 1, projectId, Integer.class);
-			
-			try(ResultSet rs = stmt.executeQuery()){
+
+			try (ResultSet rs = stmt.executeQuery()) {
 				List<Category> categories = new LinkedList<>();
-				
-				while(rs.next()) {
+
+				while (rs.next()) {
 					categories.add(extract(rs, Category.class));
 				}
 				return categories;
 			}
 		}
-		
+
 	}
 
-	
+	public boolean modifyProjectDetails(Project project) {
+		/*
+		 * / In modifyProjectDetails(), write the SQL statement to modify the project
+		 * details. Do not update the project ID – it should be part of the WHERE
+		 * clause. Remember to use question marks as parameter placeholders.
+		 */
+		// @formatter: off
+		String sql = "" 
+		+ "UPDATE " + PROJECT_TABLE + " SET " 
+		+ "project_name = ?, " 
+		+ "estimated_hours = ?, "
+		+ "actual_hours = ?, " 
+		+ "difficulty = ?, " 
+		+ "notes = ? " 
+		+ "WHERE project_id = ?";
+		// @formatter: on
+
+		/*
+		 * Obtain the Connection and PreparedStatement using the appropriate
+		 * try-with-resource and catch blocks. Start and rollback a transaction as
+		 * usual. Throw a DbException from each catch block.
+		 */
+		try (Connection conn = DbConnection.getConnection()) {
+			startTransaction(conn);
+
+			/*
+			 * Set all parameters on the PreparedStatement. Call executeUpdate() and check
+			 * if the return value is 1. Save the result in a variable.
+			 */
+			try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+				setParameter(stmt, 1, project.getProjectName(), String.class);
+				setParameter(stmt, 2, project.getEstimatedHours(), BigDecimal.class);
+				setParameter(stmt, 3, project.getActualHours(), BigDecimal.class);
+				setParameter(stmt, 4, project.getDifficulty(), Integer.class);
+				setParameter(stmt, 5, project.getNotes(), String.class);
+				setParameter(stmt, 6, project.getProjectId(), Integer.class);
+
+				/*
+				 * Call executeUpdate() and check if the return value is 1. Save the result in a
+				 * variable. Commit the transaction and return the result from executeUpdate()
+				 * as a boolean. At this point there should be no compilation errors.
+				 */
+				boolean modified = stmt.executeUpdate() == 1;
+				commitTransaction(conn);
+
+				return modified;
+
+			} catch (Exception e) {
+				rollbackTransaction(conn);
+				throw new DbException(e);
+			}
+		} catch (SQLException e) {
+			throw new DbException(e);
+		}
+	}
 }

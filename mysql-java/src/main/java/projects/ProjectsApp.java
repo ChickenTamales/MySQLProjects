@@ -36,7 +36,8 @@ public class ProjectsApp {
  private List<String> operations = List.of(
 		 "1) Add a project",
 		 "2) List projects",
-		 "3) Select a project"
+		 "3) Select a project",
+		 "4) Update project details"
 		 );
 //@formatter:on
 
@@ -81,6 +82,9 @@ public class ProjectsApp {
 				case 3:
 					selectProject();
 					break;
+					
+				case 4:
+					updateProjectDetails();
 
 				default:
 					System.out.println("\n" + selection + " is not valid. Try again.");
@@ -91,6 +95,51 @@ public class ProjectsApp {
 			}
 		}
 	}
+private void updateProjectDetails() {
+	//see if curProject is null
+		if(Objects.isNull(curProject)) {
+			//if curProject is null, ask the user to select a project
+			System.out.println("\nPlease select a project");
+			return;
+		}
+		String projectName = getStringInput("Enter the project name [" 
+		+ curProject.getProjectName() + "]");
+		
+		BigDecimal estimatedHours = getDecimalInput("Enter estimated hours [" 
+		+ curProject.getEstimatedHours() + "]");
+		
+		BigDecimal actualHours = getDecimalInput("Enter actual hours [" 
+		+ curProject.getActualHours() + "]");
+		
+		Integer difficulty = getIntInput("Enter difficulty rating ["
+		+ curProject.getDifficulty() + "]");
+		
+		String notes = getStringInput("Enter notes [" + curProject.getNotes() + "]");
+		
+		Project project = new Project();
+		
+		//set the Project ID field in the Project object to the value in the curProject object.
+		project.setProjectId(curProject.getProjectId());
+		
+		//If the user input for a value is not null, add the value to the Project object. If the value is null, add the value from curProject.
+		project.setProjectName(Objects.isNull(projectName) ? curProject.getProjectName() : projectName);
+		project.setEstimatedHours(
+				Objects.isNull(estimatedHours) ? curProject.getEstimatedHours() : estimatedHours);
+		project.setActualHours(Objects.isNull(actualHours) ? curProject.getActualHours() : actualHours);
+		project.setDifficulty(Objects.isNull(difficulty) ? curProject.getDifficulty() : difficulty);
+		project.setNotes(Objects.isNull(notes) ? curProject.getNotes() : notes);
+		
+		//call projectService.modifyProjectDetails(). Pass the Project object as a parameter. Create the method.
+		projectService.modifyProjectDetails(project);
+		
+		/*
+		 * Reread the current project to pick up the changes by calling
+		 * projectService.fetchProjectById(). Pass the project ID obtained from curProject.
+		 */
+		
+		curProject = projectService.fetchProjectById(curProject.getProjectId());
+	}
+
 /*
  * Add a new method named selectProject(). It takes no parameters and returns nothing.
  * 

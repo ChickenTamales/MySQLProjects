@@ -374,4 +374,74 @@ public class RecipeDao extends DaoBase {// tables
 		
 	}
 
+	public List<Step> fetchRecipeSteps(Integer recipeId) {
+		try(Connection conn = DbConnection.getConnection()){
+			startTransaction(conn);
+			
+			try {
+				List<Step> steps = fetchRecipeSteps(conn, recipeId);
+				commitTransaction(conn);
+				
+				return steps;
+				
+			}
+			catch(Exception e) {
+				rollbackTransaction(conn);
+				throw new DbException(e);
+			}
+			
+		} catch (SQLException e) {
+			throw new DbException(e);
+		}
+	}
+
+	public boolean modifyRecipeStep(Step step) {
+		String sql = "UPDATE " + STEP_TABLE + " SET step_text = ? WHERE step_id = ?";
+		
+		try(Connection conn = DbConnection.getConnection()){
+			startTransaction(conn);
+			
+			try(PreparedStatement stmt = conn.prepareStatement(sql)){
+				setParameter(stmt, 1, step.getStepText(), String.class);
+				setParameter(stmt, 2, step.getStepId(), Integer.class);
+				
+				//execute update returns a value, the number of rows effected
+				boolean updated = stmt.executeUpdate() == 1;
+				commitTransaction(conn);
+				
+				return updated;
+			}
+			catch(Exception e) {
+				rollbackTransaction(conn);
+				throw new DbException(e);
+			}
+		} catch (SQLException e) {
+			throw new DbException(e);
+		}
+	}
+
+	public boolean deleteRecipe(Integer recipeId) {
+		String sql = "DELETE FROM " + RECIPE_TABLE + " WHERE recipe_id = ?";
+		
+		try(Connection conn = DbConnection.getConnection()){
+			startTransaction(conn);
+			
+			try(PreparedStatement stmt = conn.prepareStatement(sql)){
+				setParameter(stmt, 1, recipeId, Integer.class);
+				
+				//if one row is affected, we'll know we've done our delete
+				boolean deleted = stmt.executeUpdate() == 1;
+				
+				commitTransaction(conn);
+				return deleted;
+			}
+			catch(Exception e) {
+				rollbackTransaction(conn);
+				throw new DbException(e);
+			}
+		} catch (SQLException e) {
+			throw new DbException(e);
+		}
+	}
+
 }

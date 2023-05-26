@@ -133,4 +133,21 @@ public class RecipeService {
 		recipeDao.addCategoryToRecipe(recipeId, category);		
 	}
 
+	public List<Step> fetchSteps(Integer recipeId) {
+		return recipeDao.fetchRecipeSteps(recipeId);
+	}
+
+	public void modifyStep(Step step) {
+		if(!recipeDao.modifyRecipeStep(step)) {
+			throw new DbException("Step with ID=" + step.getStepId() + " does not exist.");
+		}
+	}
+
+	public void deleteRecipe(Integer recipeId) {
+		if(!recipeDao.deleteRecipe(recipeId)) {
+			throw new DbException("Recipe with ID=" + recipeId + " does not exist.");
+		}
+		
+	}
+
 }

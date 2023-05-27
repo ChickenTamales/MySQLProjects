@@ -86,9 +86,11 @@ public class ProjectsApp {
 					
 				case 4:
 					updateProjectDetails();
+					break;
 					
 				case 5:
 					deleteProject();
+					break;
 
 				default:
 					System.out.println("\n" + selection + " is not valid. Try again.");
@@ -99,34 +101,37 @@ public class ProjectsApp {
 			}
 		}
 	}
-private void deleteProject() {
-	listProjects();
-	
-	//Ask the user to enter the ID of the project to delete.
-	Integer projectId = getIntInput("Enter project ID to be deleted");
-	
+//	Ask the user to enter the ID of the project to delete.
 	/*
 	 * Call projectService.deleteProject() and pass the project ID entered by the user.
 	 */
-	projectService.deleteProject(projectId);
-		
 	/*
 	 * Print a message stating that the project was deleted. (If it wasn't deleted, 
 	 * an exception is thrown by the service class.)
 	 */
-		System.out.println("You have deleted project " + projectId);
-		
 	/*
 	 * Add a check to see if the project ID in the current project is the same as 
 	 * the ID entered by the user. If so, set the value of curProject to null.	
 	 */
-		if(Objects.nonNull(curProject) && curProject.getProjectId().equals(projectId)) {
-			curProject = null;
+	
+	private void deleteProject() {
+		listProjects();
+
+		Integer projectId = getIntInput("Enter project ID to be deleted");
+
+		if (Objects.nonNull(projectId)) {
+
+			projectService.deleteProject(projectId);
+
+			System.out.println("You have deleted project " + projectId);
+
+			if (Objects.nonNull(curProject) && curProject.getProjectId().equals(projectId)) {
+				curProject = null;
+			}
 		}
 	}
 
-
-private void updateProjectDetails() {
+	private void updateProjectDetails() {
 	//see if curProject is null
 		if(Objects.isNull(curProject)) {
 			//if curProject is null, ask the user to select a project

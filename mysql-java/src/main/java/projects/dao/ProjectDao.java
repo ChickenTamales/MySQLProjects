@@ -327,8 +327,14 @@ String sql = ""
 		 * clause. Remember to use question marks as parameter placeholders.
 		 */
 		// @formatter: off
-		String sql = "" + "UPDATE " + PROJECT_TABLE + " SET " + "project_name = ?, " + "estimated_hours = ?, "
-				+ "actual_hours = ?, " + "difficulty = ?, " + "notes = ? " + "WHERE project_id = ?";
+		String sql = "" 
+				+ "UPDATE " + PROJECT_TABLE + " SET " 
+				+ "project_name = ?, " 
+				+ "estimated_hours = ?, "
+				+ "actual_hours = ?, " 
+				+ "difficulty = ?, " 
+				+ "notes = ? " 
+				+ "WHERE project_id = ?";
 		// @formatter: on
 
 		/*
